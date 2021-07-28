@@ -2,8 +2,11 @@ const holes = document.querySelectorAll('.hole');
 const moles = document.querySelectorAll('.mole');
 const scoreBoard = document.querySelector('.score');
 const gameTime = 15000;
+const minMoleTime = 300;
+const maxMoleTime = 1000;
 
 let lastHole;
+let isGame = false;
 let timeUp = false;
 let score = 0;
 
@@ -24,31 +27,47 @@ function randHole(holes){
 }
 
 function peep(){
-    const time = randTime(300, 1000);
+    const time = randTime(minMoleTime, maxMoleTime);
     const hole = randHole(holes);
 
-    hole.classList.add('up');
+    hole.addEventListener('click', stopBonk);
 
+    hole.classList.add('up');
+    
     setTimeout(() => {
         hole.classList.remove('up');
+        hole.removeEventListener('click', stopBonk);
         if(!timeUp){
             peep();
         }
     }, time);
 }
 
+function stopBonk(e){
+    if(e.target.matches('.mole')){
+        this.classList.remove('up');
+    }
+}
+
 function startGame(){
+    if(isGame){
+        return;
+    }
+    isGame = true;
     scoreBoard.textContent = '0';
     score = 0;
     timeUp = false;
     peep();
-    setTimeout(() => timeUp = true, gameTime);
+    setTimeout(() => {
+        timeUp = true;
+        isGame = false
+    }, gameTime);
 }
 
 function bonk(e){
     score++;
-    this.classList.remove('up');
     scoreBoard.textContent = score;
+    return;
 }
 
 moles.forEach(mole => mole.addEventListener('click', bonk));
